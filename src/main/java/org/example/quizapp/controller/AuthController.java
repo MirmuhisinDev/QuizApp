@@ -41,4 +41,5 @@ public class AuthController {
         ApiResponse saveAdmin = authService.saveAdmin(user);
         return ResponseEntity.status(saveAdmin.getStatus()).body(saveAdmin);
     }
+
 }
