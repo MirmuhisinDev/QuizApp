@@ -7,6 +7,7 @@ import org.example.quizapp.payload.request.QuestionDto;
 import org.example.quizapp.security.CurrentUser;
 import org.example.quizapp.service.QuestionService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -17,6 +18,7 @@ public class QuestionController {
 
     private final QuestionService questionService;
 
+    @PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_ADMIN')")
     @PostMapping("/create")
     public ResponseEntity<ApiResponse> create(@RequestBody QuestionDto questionDto,
                                               @CurrentUser User user) {

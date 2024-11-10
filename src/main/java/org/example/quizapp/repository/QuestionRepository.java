@@ -1,7 +1,6 @@
 package org.example.quizapp.repository;
 
 import org.example.quizapp.entity.Question;
-import org.example.quizapp.entity.Quiz;
 import org.example.quizapp.payload.request.QuestionDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -11,7 +10,6 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Random;
 
 public interface QuestionRepository extends JpaRepository<Question, Integer> {
     boolean existsByQuestionAndDeletedIsFalse(String question);

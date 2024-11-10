@@ -16,5 +16,4 @@ public class QuestionDto {
     private String question;
     private Long fileId;
     private List<AnswerDto> answerDto;
-    private User createdBy;
 }

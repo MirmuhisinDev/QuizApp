@@ -52,6 +52,7 @@ public class UserController {
     }
 
     @PreAuthorize("hasRole('ROLE_SUPER_ADMIN')")
+    @GetMapping("/search")
     public ResponseEntity<ApiResponse> searchByFirstName(@RequestParam ("firstName")String firstName) {
         ApiResponse apiResponse = userService.searchByFirstName(firstName);
         return ResponseEntity.ok(apiResponse);

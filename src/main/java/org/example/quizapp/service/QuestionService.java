@@ -79,7 +79,7 @@ public class QuestionService {
                     .id(question.get().getId())
                     .quizId(question.get().getQuiz().getId())
                     .question(question.get().getQuestion())
-                    .fileId(question.get().getFile().getId())
+                    .fileId(question.get().getFile() != null ? fileRepository.findById(question.get().getFile().getId()).get().getId() :null)
                     .answerDto(answerDtoList)
                     .createdAt(question.get().getCreatedAt())
                     .build();
@@ -134,7 +134,7 @@ public class QuestionService {
         Question question = byId2.get();
         question.setQuiz(byId1.get());
         question.setQuestion(questionDto.getQuestion());
-        question.setFile(questionDto.getFileId() != null ? fileRepository.findById(questionDto.getFileId()).get() : null);
+        question.setFile(byId2.get().getFile());
         Question save = questionRepository.save(question);
 
         for (AnswerDto answerDto : questionDto.getAnswerDto()) {
@@ -142,7 +142,7 @@ public class QuestionService {
             answerRepository.save(answer);
         }
 
-        return new ApiResponse("Question id not found", 404);
+        return new ApiResponse("success", 200);
     }
 
     public ApiResponse deleteById(int id) {

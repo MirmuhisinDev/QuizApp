@@ -30,6 +30,7 @@ public class UserService {
         Optional<User> byId = userRepository.findById(id);
         if(byId.isPresent()){
             UserResponse response = UserResponse.builder()
+                    .id(byId.get().getId())
                     .firstName(byId.get().getFirstName())
                     .lastName(byId.get().getLastName())
                     .birthDate(byId.get().getBirthDate())
@@ -47,6 +48,7 @@ public class UserService {
         List<UserResponse> responses = new ArrayList<>();
         for (User user : users) {
             UserResponse response = UserResponse.builder()
+                    .id(user.getId())
                     .firstName(user.getFirstName())
                     .lastName(user.getLastName())
                     .birthDate(user.getBirthDate())
@@ -85,6 +87,7 @@ public class UserService {
             User user = byId.get();
             user.setDeleted(true);
             userRepository.save(user);
+            return new ApiResponse("User deleted successfully",200);
         }
         return new ApiResponse("User not found", 404);
     }

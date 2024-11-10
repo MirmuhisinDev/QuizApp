@@ -8,10 +8,7 @@ import org.example.quizapp.payload.Pageable;
 import org.example.quizapp.payload.request.*;
 import org.example.quizapp.payload.response.QuestionResponse;
 import org.example.quizapp.payload.response.QuizResponse;
-import org.example.quizapp.repository.AnswerRepository;
-import org.example.quizapp.repository.QuestionRepository;
-import org.example.quizapp.repository.QuizRepository;
-import org.example.quizapp.repository.ResultRepository;
+import org.example.quizapp.repository.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -29,6 +26,7 @@ public class QuizService {
     private final QuestionRepository questionRepository;
     private final AnswerRepository answerRepository;
     private final ResultRepository resultRepository;
+    private final ExtraResultRepository extraResultRepository;
 
     public ApiResponse addQuiz(QuizDto quizDto) {
      boolean byQuizName = quizRepository.existsByQuizNameAndDeletedIsFalse(quizDto.getQuizName());
@@ -87,14 +85,17 @@ public class QuizService {
     }
 
     public ApiResponse updateQuiz(QuizDto quizDto, Integer id) {
+        Optional<Quiz> byId = quizRepository.findById(id);
+        if (byId.isEmpty()) {
+            return new ApiResponse("Quiz with id " + id + " not found",404);
+        }
         boolean b = quizRepository.existsByQuizNameAndIdNot(quizDto.getQuizName(), id);
         if (!b) {
-            Quiz quiz = Quiz.builder()
-                    .quizName(quizDto.getQuizName())
-                    .questionCount(quizDto.getQuestionCount())
-                    .quizTime(quizDto.getQuizTime())
-                    .quizDescription(quizDto.getDescription())
-                    .build();
+            Quiz quiz = byId.get();
+            quiz.setQuizName(quizDto.getQuizName());
+            quiz.setQuestionCount(quizDto.getQuestionCount());
+            quiz.setQuizTime(quizDto.getQuizTime());
+            quiz.setQuizDescription(quizDto.getDescription());
             quizRepository.save(quiz);
             return new ApiResponse("Quiz updated successfully",200);
         }
@@ -165,7 +166,7 @@ public class QuizService {
                 .build();
     }
 
-    public ApiResponse passQuiz(Integer quizId, List<PassQuestionDto> questionId, User user, Integer duration) {
+    public ApiResponse passQuiz(Integer quizId, List<PassQuestionDto> passQuestionDtos, User user, Integer duration) {
         Optional<Quiz> byId = quizRepository.findById(quizId);
         if (byId.isEmpty()) {
             return new ApiResponse("Quiz with id " + quizId + " not found",404);
@@ -174,7 +175,8 @@ public class QuizService {
 
         int correctAnswer = 0;
 
-        for (PassQuestionDto passQuestionDto : questionId) {
+
+        for (PassQuestionDto passQuestionDto : passQuestionDtos) {
 
             Optional<Question> byId1 = questionRepository.findById(passQuestionDto.getQuestionId());
             if (byId1.isEmpty()) {
@@ -186,7 +188,6 @@ public class QuizService {
                 correctAnswer++;
             }
         }
-
         Result result = Result.builder()
                 .user(user)
                 .quiz(quiz)
@@ -194,7 +195,17 @@ public class QuizService {
                 .correctAnswer(correctAnswer)
                 .resultTime(duration)
                 .build();
-        resultRepository.save(result);
+        Result save = resultRepository.save(result);
+
+
+        for (PassQuestionDto passQuestionDto : passQuestionDtos) {
+            ExtraResult extraResult = ExtraResult.builder()
+                    .result(save)
+                    .question(questionRepository.findById(passQuestionDto.getQuestionId()).orElse(null))
+                    .answer(answerRepository.findById(passQuestionDto.getAnswerID()).orElse(null))
+                    .build();
+            extraResultRepository.save(extraResult);
+        }
         return new ApiResponse("Test finished successfully"+ result.getId(),200);
     }
 }
